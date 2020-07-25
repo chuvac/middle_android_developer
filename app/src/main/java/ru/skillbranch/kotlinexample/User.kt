@@ -28,7 +28,8 @@ class User private constructor(
 
     private var phone: String? = null
         set(value) {
-            field = formatLogin(value)
+            field = value?.replace("""[^+\d]""".toRegex(), "")
+            if (field == "") field = null
             if (field != null && !field!!.contains("""^\+(\d{11})""".toRegex()))
                 throw IllegalArgumentException("Enter a valid phone number starting with a + and containing 11 digits")
         }
@@ -76,13 +77,15 @@ class User private constructor(
         firstName: String,
         lastName: String?,
         email: String?,
-        password: String,
+        password: String?,
         rawPhone: String?
     ): this(firstName, lastName, rawPhone = rawPhone, email = email, meta = mapOf("src" to "csv")){
         println("Secondary csv constructor")
-        val saltAndHash = password.split(":")
-        salt = saltAndHash[0]
-        passwordHash = saltAndHash[1]
+        val saltAndHash = password?.split(":")
+        saltAndHash?.let {
+            salt = saltAndHash[0]
+            passwordHash = saltAndHash[1]
+        }
     }
 
     init {
@@ -159,7 +162,7 @@ class User private constructor(
             val (firstName, lastName) = fullName.fullNameToPair()
 
             return when {
-                password?.contains(":")!! -> User(
+                password?.contains(":") ?: false -> User(
                     firstName,
                     lastName,
                     email = email,

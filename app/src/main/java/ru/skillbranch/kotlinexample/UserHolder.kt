@@ -48,6 +48,7 @@ object UserHolder {
         val userList: MutableList<User> = mutableListOf()
         for (string in list) {
             val stringList = string.split(""";""")
+
             userList.add(User.makeUser(
                 fullName = stringList[0],
                 email = stringList[1],
