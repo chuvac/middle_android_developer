@@ -196,7 +196,7 @@ class User private constructor(
 
 
         fun formatLogin(login: String?): String? {
-            return if(login?.contains("""@""".toRegex()) == true) login.trim()
+            return if(login?.contains("""@""".toRegex()) == true) login.trim().toLowerCase()
             else login?.replace("""[^+\d]""".toRegex(), "")
         }
     }
