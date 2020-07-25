@@ -49,12 +49,15 @@ object UserHolder {
         for (string in list) {
             val stringList = string.split(""";""")
 
-            userList.add(User.makeUser(
+            val user = User.makeUser(
                 fullName = stringList[0],
                 email = stringList[1],
                 password = stringList[2],
                 phone = stringList[3]
-            ))
+            )
+
+            userList.add(user)
+            map.put(user.login, user)
         }
         return userList
     }
