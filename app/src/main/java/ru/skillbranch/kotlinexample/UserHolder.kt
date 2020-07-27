@@ -50,10 +50,10 @@ object UserHolder {
             val stringList = string.split(""";""")
 
             val user = User.makeUser(
-                fullName = stringList[0],
-                email = stringList[1],
-                password = stringList[2],
-                phone = stringList[3]
+                fullName = stringList[0].trim(),
+                email = if (stringList[1].isNullOrBlank()) null else stringList[1],
+                password = stringList[2].trim(),
+                phone = stringList[3].trim()
             )
 
             userList.add(user)
