@@ -53,17 +53,17 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
     }
 
     // load text from network
-    private fun getArticleContent(): LiveData<List<Any>?> {
+    override fun getArticleContent(): LiveData<List<Any>?> {
         return repository.loadArticleContent(articleId)
     }
 
     // load data fro mdb
-    private fun getArticleData(): LiveData<ArticleData?> {
+    override fun getArticleData(): LiveData<ArticleData?> {
         return repository.getArticle(articleId)
     }
 
     // load data from db
-    private fun getArticlePersonalInfo(): LiveData<ArticlePersonalInfo?> {
+    override fun getArticlePersonalInfo(): LiveData<ArticlePersonalInfo?> {
         return repository.loadArticlePersonalInfo(articleId)
     }
 
@@ -75,11 +75,11 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
     }
 
     override fun handleSearchMode(isSearch: Boolean) {
-        TODO("Not yet implemented")
+        updateState { it.copy(isSearch = isSearch) }
     }
 
     override fun handleSearch(query: String?) {
-        TODO("Not yet implemented")
+        updateState { it.copy(searchQuery = query) }
     }
 
     // app settings
@@ -118,7 +118,7 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
         val msg = if (!isLiked) Notify.TextMessage("Mark is liked")
         else {
             Notify.ActionMessage(
-                "Don't like it anymore", // message
+                "Don`t like it anymore", // message
                 "No, still like it", // action label on snackbar
                 toggleLike
             )
@@ -139,14 +139,6 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
 
     fun showMenu() {
         updateState { it.copy(isShowMenu = menuIsShown) }
-    }
-
-    fun handleSearchQuery(query: String?) {
-        updateState { it.copy(searchQuery = query) }
-    }
-
-    fun handleIsSearch(isSearch: Boolean) {
-        updateState { it.copy(isSearch = isSearch) }
     }
 }
 

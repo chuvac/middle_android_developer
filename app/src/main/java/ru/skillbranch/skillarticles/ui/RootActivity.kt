@@ -2,10 +2,11 @@ package ru.skillbranch.skillarticles.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
 import android.widget.ImageView
+import android.widget.SearchView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
@@ -18,7 +19,7 @@ import ru.skillbranch.skillarticles.viewmodels.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.Notify
 import ru.skillbranch.skillarticles.viewmodels.ViewModelFactory
 
-class RootActivity : AppCompatActivity() {
+class RootActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private lateinit var viewModel: ArticleViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,6 +39,30 @@ class RootActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.search_menu, menu)
+        val searchView = menu?.findItem(R.id.action_search)?.actionView as SearchView
+        searchView.setOnQueryTextListener(this)
+
+        searchView.queryHint = "Search"
+        if (viewModel.currentState.isSearch){
+            searchView.isIconified = false
+            searchView.setQuery(viewModel.currentState.searchQuery ?: "", false)
+        }
+        return super.onCreateOptionsMenu(menu)
+    }
+
+
+    override fun onQueryTextSubmit(query: String?): Boolean {
+        return true
+    }
+
+    override fun onQueryTextChange(newText: String?): Boolean {
+        if (newText != "") viewModel.handleSearchMode(true) else viewModel.handleSearchMode(false)
+        viewModel.handleSearch(newText)
+        return true
+    }
+
     private fun setupSubmenu() {
         btn_text_up.setOnClickListener {viewModel.handleUpText()}
         btn_text_down.setOnClickListener {viewModel.handleDownText()}
@@ -49,6 +74,20 @@ class RootActivity : AppCompatActivity() {
         btn_bookmark.setOnClickListener {viewModel.handleBookmark()}
         btn_share.setOnClickListener {viewModel.handleShare()}
         btn_settings.setOnClickListener {viewModel.handleToggleMenu()}
+    }
+
+    private fun setupToolbar() {
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        val logo = if (toolbar.childCount > 2) toolbar.getChildAt(2) as ImageView else null
+        logo?.scaleType = ImageView.ScaleType.CENTER_CROP
+        val lp = logo?.layoutParams as? Toolbar.LayoutParams
+        lp?.let {
+            it.width = dpToIntPx(40)
+            it.height = dpToIntPx(40)
+            it.marginEnd = dpToIntPx(16)
+            logo.layoutParams = it
+        }
     }
 
     private fun renderUi(data: ArticleState) {
@@ -80,6 +119,7 @@ class RootActivity : AppCompatActivity() {
         toolbar.title = data.title
         toolbar.subtitle = data.category ?: "loading"
         if (data.categoryIcon != null) toolbar.logo = getDrawable(data.categoryIcon as Int)
+
     }
 
     private fun renderNotification(notify: Notify) {
@@ -108,19 +148,5 @@ class RootActivity : AppCompatActivity() {
         }
 
         snackbar.show()
-    }
-
-    private fun setupToolbar() {
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        val logo = if (toolbar.childCount > 2) toolbar.getChildAt(2) as ImageView else null
-        logo?.scaleType = ImageView.ScaleType.CENTER_CROP
-        val lp = logo?.layoutParams as? Toolbar.LayoutParams
-        lp?.let {
-            it.width = dpToIntPx(40)
-            it.height = dpToIntPx(40)
-            it.marginEnd = dpToIntPx(16)
-            logo.layoutParams = it
-        }
     }
 }
