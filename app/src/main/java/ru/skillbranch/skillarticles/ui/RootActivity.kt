@@ -2,10 +2,12 @@ package ru.skillbranch.skillarticles.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
+import android.view.MenuItem
 import android.widget.ImageView
-import android.widget.SearchView
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.snackbar.Snackbar
@@ -21,6 +23,7 @@ import ru.skillbranch.skillarticles.viewmodels.ViewModelFactory
 
 class RootActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private lateinit var viewModel: ArticleViewModel
+    private var searchMenuItem: MenuItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,18 +40,21 @@ class RootActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         viewModel.observeNotifications(this) {
             renderNotification(it)
         }
+        Log.d("TAG", "OnCreate")
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.search_menu, menu)
-        val searchView = menu?.findItem(R.id.action_search)?.actionView as SearchView
-        searchView.setOnQueryTextListener(this)
+        searchMenuItem = menu?.findItem(R.id.action_search)
+        val searchView = searchMenuItem?.actionView as SearchView
 
-        searchView.queryHint = "Search"
+        searchView.setOnQueryTextListener(this)
         if (viewModel.currentState.isSearch){
-            searchView.isIconified = false
-            searchView.setQuery(viewModel.currentState.searchQuery ?: "", false)
+            searchMenuItem?.expandActionView()
+            searchView.setQuery(viewModel.currentState.searchQuery, true)
         }
+
+        Log.d("TAG", searchView.query.toString())
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -58,9 +64,9 @@ class RootActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     }
 
     override fun onQueryTextChange(newText: String?): Boolean {
-        if (newText != "") viewModel.handleSearchMode(true) else viewModel.handleSearchMode(false)
-        viewModel.handleSearch(newText)
-        return true
+        viewModel.handleSearchMode(true)
+        if (newText != "") viewModel.handleSearch(newText)
+        return false
     }
 
     private fun setupSubmenu() {
@@ -74,6 +80,7 @@ class RootActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         btn_bookmark.setOnClickListener {viewModel.handleBookmark()}
         btn_share.setOnClickListener {viewModel.handleShare()}
         btn_settings.setOnClickListener {viewModel.handleToggleMenu()}
+
     }
 
     private fun setupToolbar() {
