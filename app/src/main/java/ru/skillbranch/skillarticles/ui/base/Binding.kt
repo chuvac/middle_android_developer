@@ -2,13 +2,13 @@ package ru.skillbranch.skillarticles.ui.base
 
 import android.os.Bundle
 import ru.skillbranch.skillarticles.ui.delegates.RenderProp
-import ru.skillbranch.skillarticles.viewmodels.base.IViewModelstate
+import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import kotlin.reflect.KProperty
 
 abstract class Binding {
     val delegates = mutableMapOf<String, RenderProp<out Any>>()
     abstract fun onFinishInflate()
-    abstract fun bind(data: IViewModelstate)
+    abstract fun bind(data: IViewModelState)
     abstract fun saveUi(outState: Bundle)
     abstract fun restoreUi(savedState: Bundle)
 

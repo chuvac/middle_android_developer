@@ -12,7 +12,7 @@ import ru.skillbranch.skillarticles.extensions.data.toArticlePersonalInfo
 import ru.skillbranch.skillarticles.extensions.format
 import ru.skillbranch.skillarticles.extensions.indexesOf
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
-import ru.skillbranch.skillarticles.viewmodels.base.IViewModelstate
+import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
 
 class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleState>(ArticleState()), IArticleViewModel {
@@ -183,7 +183,7 @@ data class ArticleState(
     val poster: String? = null, //обложка статьи
     val content: List<Any> = emptyList(), //контент
     val reviews: List<Any> = emptyList() //отзывы
-): IViewModelstate {
+): IViewModelState {
     override fun save(outState: Bundle) {
         outState.putAll(
             bundleOf(
