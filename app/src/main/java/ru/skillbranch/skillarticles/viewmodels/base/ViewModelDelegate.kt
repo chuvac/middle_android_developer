@@ -11,7 +11,10 @@ class ViewModelDelegate<T : ViewModel>(
     private val arg: Any?) : ReadOnlyProperty<FragmentActivity, T> {
 
     override fun getValue(thisRef: FragmentActivity, property: KProperty<*>): T {
-        val vmFactory = ViewModelFactory(arg as String)
-        return ViewModelProviders.of(thisRef, vmFactory).get(clazz)
+        val vmFactory: ViewModelFactory
+        return if (arg != null) {
+            vmFactory = ViewModelFactory(arg as String)
+            ViewModelProviders.of(thisRef, vmFactory).get(clazz)
+        } else ViewModelProviders.of(thisRef, null).get(clazz)
     }
 }
