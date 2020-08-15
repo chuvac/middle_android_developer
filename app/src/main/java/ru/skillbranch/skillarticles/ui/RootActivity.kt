@@ -38,10 +38,12 @@ import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
 
 class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
-    override val viewModel: ArticleViewModel by lazy {
-        val vmFactory = ViewModelFactory("0")
-        ViewModelProviders.of(this, vmFactory).get(ArticleViewModel::class.java)
-    }
+//    override val viewModel: ArticleViewModel by lazy {
+//        val vmFactory = ViewModelFactory("0")
+//        ViewModelProviders.of(this, vmFactory).get(ArticleViewModel::class.java)
+//    }
+
+    override val viewModel: ArticleViewModel by provideViewModel("0")
     override val layout: Int = R.layout.activity_root
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
