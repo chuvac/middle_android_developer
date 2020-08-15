@@ -37,6 +37,8 @@ class BottombarBehavior: CoordinatorLayout.Behavior<Bottombar>() {
         type: Int
     ) {
         super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type)
-        child.translationY = max(0f, min(child.height.toFloat(), child.translationY + dy))
+        if (!child.isSearchMode) {
+            child.translationY = max(0f, min(child.height.toFloat(), child.translationY + dy))
+        }
     }
 }

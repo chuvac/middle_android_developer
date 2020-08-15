@@ -1,10 +1,11 @@
-package ru.skillbranch.skillarticles.viewmodels
+package ru.skillbranch.skillarticles.viewmodels.base
 
+import android.os.Bundle
 import androidx.annotation.UiThread
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.*
 
-abstract class BaseViewModel<T>(initState: T) : ViewModel() {
+abstract class BaseViewModel<T: IViewModelstate>(initState: T) : ViewModel() {
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     val notifications = MutableLiveData<Event<Notify>>()
 
@@ -43,7 +44,8 @@ abstract class BaseViewModel<T>(initState: T) : ViewModel() {
      */
     @UiThread
     protected fun notify(content: Notify) {
-        notifications.value = Event(content)
+        notifications.value =
+            Event(content)
     }
 
     /***
@@ -60,7 +62,18 @@ abstract class BaseViewModel<T>(initState: T) : ViewModel() {
      * реализует данное поведение с помощью EventObserver
      */
     fun observeNotifications(owner: LifecycleOwner, onNotify: (notification: Notify) -> Unit) {
-        notifications.observe(owner, EventObserver { onNotify(it) })
+        notifications.observe(owner,
+            EventObserver {
+                onNotify(it)
+            })
+    }
+
+    fun saveState(outState: Bundle) {
+        currentState.save(outState)
+    }
+
+    fun restoreState(savedState: Bundle) {
+        state.value = currentState.restore(savedState) as T
     }
 
     /***
@@ -77,15 +90,6 @@ abstract class BaseViewModel<T>(initState: T) : ViewModel() {
         }
     }
 
-}
-
-class ViewModelFactory(private val params: String) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ArticleViewModel::class.java)) {
-            return ArticleViewModel(params) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
 }
 
 class Event<out E>(private val content: E) {
