@@ -2,6 +2,7 @@ package ru.skillbranch.skillarticles.ui.base
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModel
 import ru.skillbranch.skillarticles.viewmodels.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
@@ -16,7 +17,7 @@ abstract class BaseActivity<T: BaseViewModel<out IViewModelState>>: AppCompatAct
     abstract fun setupViews()
     abstract fun renderNotification(notify: Notify)
 
-    internal inline fun provideViewModel(arg : Any?) : ViewModelDelegate<ArticleViewModel> = ViewModelDelegate(clazz = ArticleViewModel::class.java, arg = arg)
+    internal inline fun <reified T: ViewModel>provideViewModel(arg : Any?) : ViewModelDelegate<T> = ViewModelDelegate(clazz = T::class.java, arg = arg)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
