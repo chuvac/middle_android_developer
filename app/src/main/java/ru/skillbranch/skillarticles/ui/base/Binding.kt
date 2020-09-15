@@ -5,6 +5,7 @@ import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import kotlin.reflect.KProperty
 
+@Suppress("UNCHECKED_CAST")
 abstract class Binding {
     val delegates = mutableMapOf<String, RenderProp<out Any>>()
     abstract fun onFinishInflate()

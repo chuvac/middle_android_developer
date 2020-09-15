@@ -5,6 +5,7 @@ import androidx.annotation.VisibleForTesting
 import android.text.Selection
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.method.LinkMovementMethod
 import android.text.method.ScrollingMovementMethod
 import android.view.Menu
 import android.view.MenuItem
@@ -23,6 +24,7 @@ import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.extensions.setMarginOptionally
+import ru.skillbranch.skillarticles.markdown.MarkdownBuilder
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.ui.base.Binding
 import ru.skillbranch.skillarticles.ui.custom.SearchFocusSpan
@@ -66,7 +68,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
         clearSearchResult()
 
-        searchResult.forEach{(start, end) ->
+        searchResult.forEach { (start, end) ->
             content.setSpan(
                 SearchSpan(bgColor, fgColor),
                 start,
@@ -85,7 +87,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         content.getSpans<SearchFocusSpan>()
             .forEach { content.removeSpan(it) }
 
-        if (spans.isNotEmpty()){
+        if (spans.isNotEmpty()) {
             val result = spans[searchPosition]
             Selection.setSelection(content, content.getSpanStart(result))
             content.setSpan(
@@ -113,9 +115,6 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         scroll.setMarginOptionally(bottom = dpToIntPx(0))
     }
 
-
-
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.search_menu, menu)
         val menuItem = menu?.findItem(R.id.action_search)
@@ -128,7 +127,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             else searchView?.clearFocus()
         }
 
-        menuItem?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener{
+        menuItem?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
             override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
                 viewModel.handleSearchMode(true)
                 return true
@@ -141,7 +140,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
         })
 
-        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 viewModel.handleSearch(query)
                 return true
@@ -158,27 +157,29 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
     }
 
     private fun setupSubmenu() {
-        btn_text_up.setOnClickListener {viewModel.handleUpText()}
-        btn_text_down.setOnClickListener {viewModel.handleDownText()}
-        switch_mode.setOnClickListener {viewModel.handleNightMode()}
+        btn_text_up.setOnClickListener { viewModel.handleUpText() }
+        btn_text_down.setOnClickListener { viewModel.handleDownText() }
+        switch_mode.setOnClickListener { viewModel.handleNightMode() }
     }
 
     private fun setupBottombar() {
-        btn_like.setOnClickListener {viewModel.handleLike()}
-        btn_bookmark.setOnClickListener {viewModel.handleBookmark()}
-        btn_share.setOnClickListener {viewModel.handleShare()}
-        btn_settings.setOnClickListener {viewModel.handleToggleMenu()}
+        btn_like.setOnClickListener { viewModel.handleLike() }
+        btn_bookmark.setOnClickListener { viewModel.handleBookmark() }
+        btn_share.setOnClickListener { viewModel.handleShare() }
+        btn_settings.setOnClickListener { viewModel.handleToggleMenu() }
 
         btn_result_up.setOnClickListener {
             if (search_view.hasFocus()) search_view.clearFocus()
+            if(!tv_text_content.hasFocus()) tv_text_content.requestFocus()
             viewModel.handleUpResult()
         }
         btn_result_down.setOnClickListener {
             if (search_view.hasFocus()) search_view.clearFocus()
+            if(!tv_text_content.hasFocus()) tv_text_content.requestFocus()
             viewModel.handleDownResult()
         }
 
-        btn_search_close.setOnClickListener{
+        btn_search_close.setOnClickListener {
             viewModel.handleSearchMode(false)
             invalidateOptionsMenu()
         }
@@ -198,14 +199,14 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         }
     }
 
-
     override fun renderNotification(notify: Notify) {
         val snackbar = Snackbar.make(coordinator_container, notify.message, Snackbar.LENGTH_LONG)
             .setAnchorView(bottombar)
             .setActionTextColor(getColor(R.color.color_accent_dark))
 
-        when(notify) {
-            is Notify.TextMessage -> { /* nothing */}
+        when (notify) {
+            is Notify.TextMessage -> { /* nothing */
+            }
             is Notify.ActionMessage -> {
                 snackbar.setActionTextColor(getColor(R.color.color_accent_dark))
                 snackbar.setAction(notify.actionLabel) {
@@ -227,18 +228,18 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         snackbar.show()
     }
 
-    inner class ArticleBinding(): Binding() {
+    inner class ArticleBinding() : Binding() {
         var isFocusedSearch: Boolean = false
         private var searchQuery: String? = null
         private var isLoadingContent by ObserveProp(true)
-        private var isLike: Boolean by RenderProp(false) {btn_like.isChecked = it}
-        private var isBookmark: Boolean by RenderProp(false) {btn_bookmark.isChecked = it}
+        private var isLike: Boolean by RenderProp(false) { btn_like.isChecked = it }
+        private var isBookmark: Boolean by RenderProp(false) { btn_bookmark.isChecked = it }
         private var isShowMenu: Boolean by RenderProp(false) {
             btn_settings.isChecked = it
             if (it) submenu.open() else submenu.close()
         }
-        private var title: String by RenderProp("loading") {toolbar.title = it}
-        private var category: String by RenderProp("loading") {toolbar.subtitle = it}
+        private var title: String by RenderProp("loading") { toolbar.title = it }
+        private var category: String by RenderProp("loading") { toolbar.subtitle = it }
         private var categoryIcon: Int by RenderProp(R.drawable.logo_placeholder) {
             toolbar.logo = getDrawable(it)
         }
@@ -255,7 +256,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             }
         }
 
-        private var isDarkMode: Boolean by RenderProp(false, false) {
+        private var isDarkMode: Boolean by RenderProp(value = false, needInit = false) {
             switch_mode.isChecked = it
             delegate.localNightMode = if (it) AppCompatDelegate.MODE_NIGHT_YES
             else AppCompatDelegate.MODE_NIGHT_NO
@@ -269,8 +270,12 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         private var searchPosition: Int by ObserveProp(0)
 
         private var content: String by ObserveProp("loading") {
-            tv_text_content.setText(it, TextView.BufferType.SPANNABLE)
-            tv_text_content.movementMethod = ScrollingMovementMethod()
+            MarkdownBuilder(this@RootActivity)
+                .markdownToSpan(it)
+                .run {
+                    tv_text_content.setText(it, TextView.BufferType.SPANNABLE)
+                }
+            tv_text_content.movementMethod = LinkMovementMethod.getInstance()
         }
 
         override fun onFinishInflate() {
@@ -279,13 +284,12 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
                 ::isSearch,
                 ::searchResults,
                 ::searchPosition
-            ) {
-                ilc, iss, sr, sp ->
+            ) { ilc, iss, sr, sp ->
                 if (!ilc && iss) {
                     renderSearchResult(sr)
                     renderSearchPosition(sp)
                 }
-                if (!ilc && !iss){
+                if (!ilc && !iss) {
                     clearSearchResult()
                 }
                 bottombar.bindSearchInfo(sr.size, sp)
@@ -304,7 +308,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             if (data.title != null) title = data.title
             if (data.category != null) category = data.category
             if (data.categoryIcon != null) categoryIcon = data.categoryIcon as Int
-            if (data.content.isNotEmpty()) content = data.content.first() as String
+            if (data.content != null) content = data.content
 
             isLoadingContent = data.isLoadingContent
             isSearch = data.isSearch

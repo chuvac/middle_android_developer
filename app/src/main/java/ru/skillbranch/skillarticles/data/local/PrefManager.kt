@@ -10,10 +10,10 @@ class PrefManager(context: Context) {
     val preferences: SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(context) }
 
     var storedBoolean by PrefDelegate(false)
-    var storedString by PrefDelegate("")
-    var storedFloat by PrefDelegate(0f)
-    var storedInt by PrefDelegate(0)
-    var storedLong by PrefDelegate(0)
+    var storedString by PrefDelegate("test")
+    var storedFloat by PrefDelegate(100f)
+    var storedInt by PrefDelegate(Int.MAX_VALUE)
+    var storedLong by PrefDelegate(Long.MAX_VALUE)
 
     fun clearAll() {
         preferences.edit().clear().apply()
