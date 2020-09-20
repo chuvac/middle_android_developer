@@ -16,13 +16,13 @@ object MarkdownParser {
     private const val RULE_GROUP = "(^[-_*]{3}$)"
     private const val INLINE_GROUP = "((?<!`)`[^`\\s].*?[^`\\s]?`(?!`))"
     private const val LINK_GROUP = "(\\[[^\\[\\]]*?\\]\\(.+?\\)|^\\[*?]\\(.*?\\))"
-    private const val BLOCK_CODE_GROUP = ""
-    private const val ORDER_LIST_GROUP = ""
+    private const val BLOCK_CODE_GROUP = "(^`{3}[^`]*?`{3}$)"
+    private const val ORDER_LIST_GROUP = "(^\\d+\\. .*?$)"
 
     //result regex
     private const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP" +
-            "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|$RULE_GROUP|$INLINE_GROUP|$LINK_GROUP"
-    //|$BLOCK_CODE_GROUP|$ORDER_LIST_GROUP optionally
+            "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|$RULE_GROUP|$INLINE_GROUP|$LINK_GROUP" +
+            "|$BLOCK_CODE_GROUP|$ORDER_LIST_GROUP"
 
     private val elementsPattern by lazy { Pattern.compile(MARKDOWN_GROUPS, Pattern.MULTILINE) }
 
@@ -175,12 +175,36 @@ object MarkdownParser {
                 }
                 //10 -> BLOCK CODE - optionally
                 10 -> {
-
+                    text = string.subSequence(startIndex.plus(3), endIndex.minus(3))
+                    val listOfTextLine = text.split("\\n".toRegex())
+                    var element: Element
+                    var child: List<Element>
+                    if (listOfTextLine.size == 1) {
+                        child = findElements(text)
+                        element = Element.BlockCode(type = Element.BlockCode.Type.SINGLE, text = text, elements = child)
+                        parents.add(element)
+                    } else if (listOfTextLine.size > 1) {
+                        for (i in listOfTextLine.indices) {
+                            child = findElements(listOfTextLine[i])
+                            element = when (i) {
+                                0 ->  Element.BlockCode(Element.BlockCode.Type.START, listOfTextLine[i] + "\n", child)
+                                listOfTextLine.size - 1 -> Element.BlockCode(Element.BlockCode.Type.END, listOfTextLine[i], child)
+                                else -> Element.BlockCode(Element.BlockCode.Type.MIDDLE, listOfTextLine[i] + "\n", child)
+                            }
+                            parents.add(element)
+                        }
+                    }
+                    lastStartIndex = endIndex
                 }
 
                 //11 -> NUMERIC LIST
                 11 -> {
-
+                    val order = "^\\d+".toRegex().find(string.subSequence(startIndex, endIndex), 0)!!.value
+                    text = string.subSequence(startIndex.plus(order.length + 2), endIndex)
+                    val child = findElements(text)
+                    val element = Element.OrderedListItem(order, text, child)
+                    parents.add(element)
+                    lastStartIndex = endIndex
                 }
             }
 
