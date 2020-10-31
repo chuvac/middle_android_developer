@@ -3,8 +3,8 @@ package ru.skillbranch.skillarticles.ui.custom.markdown
 import android.text.Spannable
 import android.text.SpannableString
 import androidx.core.text.getSpans
-import ru.skillbranch.skillarticles.ui.custom.SearchFocusSpan
-import ru.skillbranch.skillarticles.ui.custom.SearchSpan
+import ru.skillbranch.skillarticles.ui.custom.spans.SearchFocusSpan
+import ru.skillbranch.skillarticles.ui.custom.spans.SearchSpan
 import java.lang.Exception
 
 interface IMarkdownView {
