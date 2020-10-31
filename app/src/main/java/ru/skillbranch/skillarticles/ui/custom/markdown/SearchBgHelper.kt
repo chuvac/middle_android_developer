@@ -60,7 +60,6 @@ class SearchBgHelper(
     private val drawableMiddle: Drawable by lazy {
         mockDrawable ?: GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
-            cornerRadii = FloatArray(8).apply { fill(0f, 0, size) }
             color = ColorStateList.valueOf(alphaColor)
             setStroke(borderWidth, secondaryColor)
         }
