@@ -11,3 +11,12 @@ fun View.setMarginOptionally(left:Int = marginLeft, top : Int = marginTop, right
 //    layoutParams = lp
     (layoutParams as CoordinatorLayout.LayoutParams).setMargins(left, top, right, bottom)
 }
+
+fun View.setPaddingOptionally(
+    left: Int = paddingLeft,
+    top : Int = paddingTop,
+    right : Int = paddingRight,
+    bottom : Int = paddingBottom
+) {
+    setPadding(left, top, right, bottom)
+}
