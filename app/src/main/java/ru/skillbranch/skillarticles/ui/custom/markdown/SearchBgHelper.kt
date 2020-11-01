@@ -37,7 +37,7 @@ class SearchBgHelper(
     private val alphaColor: Int = ColorUtils.setAlphaComponent(secondaryColor, 160)//colorSecondary with 160 alpha
 
     private val drawable: Drawable by lazy {
-        GradientDrawable().apply {
+        mockDrawable ?: GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadii = FloatArray(8).apply { fill(radius, 0, size) }
             color = ColorStateList.valueOf(alphaColor)
@@ -120,22 +120,21 @@ class SearchBgHelper(
                     if (spanStart in headerSpans[0].lastLineBounds
                         || spanEnd in headerSpans[0].lastLineBounds
                     ) headerSpans[0].bottomExtraPadding else 0
-
-                startOffset = layout.getPrimaryHorizontal(spanStart).toInt()
-                endOffset = layout.getPrimaryHorizontal(spanEnd).toInt()
-
-                render = if (startLine == endLine) singleLineRender else multiLineRender
-                render.draw(
-                    canvas,
-                    layout,
-                    startLine,
-                    endLine,
-                    startOffset,
-                    endOffset,
-                    topExtraPadding,
-                    bottomExtraPadding
-                )
             }
+            startOffset = layout.getPrimaryHorizontal(spanStart).toInt()
+            endOffset = layout.getPrimaryHorizontal(spanEnd).toInt()
+
+            render = if (startLine == endLine) singleLineRender else multiLineRender
+            render.draw(
+                canvas,
+                layout,
+                startLine,
+                endLine,
+                startOffset,
+                endOffset,
+                topExtraPadding,
+                bottomExtraPadding
+            )
         }
     }
 }
