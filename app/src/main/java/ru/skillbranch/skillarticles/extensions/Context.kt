@@ -9,6 +9,10 @@ import android.os.Build
 import android.util.TypedValue
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import androidx.navigation.NavDestination
+import androidx.navigation.ui.onNavDestinationSelected
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.ui.delegates.AttrValue
 import kotlin.reflect.KProperty
 
@@ -58,4 +62,11 @@ fun Context.attrValue(res: Int): Int {
         else throw Resources.NotFoundException("Resource with id $res not found")
     }
     return value!!
+}
+
+fun BottomNavigationView.selectDestination(destination: NavDestination) {
+
+    when (destination.id) {
+        R.id.nav_articles, R.id.nav_bookmarks, R.id.nav_transcriptions, R.id.nav_profile -> menu.findItem(destination.id).isChecked = true
+    }
 }
