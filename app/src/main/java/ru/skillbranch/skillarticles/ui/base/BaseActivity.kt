@@ -14,6 +14,7 @@ import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions.circleCropTransform
@@ -66,7 +67,10 @@ abstract class BaseActivity<T: BaseViewModel<out IViewModelState>>: AppCompatAct
 
             is NavigationCommand.FinishLogin -> {
                 navController.navigate(R.id.finish_login)
-                if (command.privateDestination != null) navController.navigate(command.privateDestination)
+                if (command.privateDestination != null) {
+                    navController.navigate(command.privateDestination)
+                }
+
             }
 
             is NavigationCommand.StartLogin -> {
