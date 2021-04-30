@@ -8,7 +8,12 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.TypedValue
 import android.view.View
+import android.view.inputmethod.InputMethod
+import android.view.inputmethod.InputMethod.SHOW_EXPLICIT
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
+import androidx.core.view.forEach
+import androidx.core.view.iterator
 import androidx.navigation.NavDestination
 import androidx.navigation.ui.onNavDestinationSelected
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -36,6 +41,11 @@ fun Context.dpToIntPx(dp: Int): Int {
 fun Context.hideKeyboard(view: View) {
     val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
     imm.hideSoftInputFromWindow(view.windowToken, 0)
+}
+
+fun Context.showKeyboard(etComment: EditText?) {
+    val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+    imm.showSoftInput(etComment, InputMethodManager.SHOW_IMPLICIT)
 }
 
 val Context.isNetworkAvailable: Boolean
@@ -66,7 +76,17 @@ fun Context.attrValue(res: Int): Int {
 
 fun BottomNavigationView.selectDestination(destination: NavDestination) {
 
-    when (destination.id) {
-        R.id.nav_articles, R.id.nav_bookmarks, R.id.nav_transcriptions, R.id.nav_profile -> menu.findItem(destination.id).isChecked = true
+    menu.forEach {
+        if (it.itemId == destination.id) it.isChecked = true
+    }
+}
+
+fun BottomNavigationView.selectItem(itemId: Int?) {
+    itemId ?: return
+    for (item in menu.iterator()) {
+        if (item.itemId == itemId) {
+            item.isChecked = true
+            break
+        }
     }
 }
