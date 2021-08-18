@@ -5,6 +5,6 @@ import ru.skillbranch.skillarticles.data.LocalDataHolder
 
 object RootRepository {
 
-    fun isAuth() : LiveData<Boolean> = LocalDataHolder.isAuth()
-    fun setAuth(auth:Boolean) = LocalDataHolder.setAuth(auth)
+    fun isAuth() : LiveData<Boolean> = ArticleRepository.isAuth()
+    fun setAuth(auth:Boolean) = ArticleRepository.setAuth(auth)
 }

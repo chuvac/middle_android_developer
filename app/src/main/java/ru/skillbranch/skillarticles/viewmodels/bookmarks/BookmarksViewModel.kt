@@ -7,11 +7,8 @@ import androidx.paging.PagedList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ru.skillbranch.skillarticles.data.models.ArticleItemData
-import ru.skillbranch.skillarticles.data.repositories.ArticleStrategy
-import ru.skillbranch.skillarticles.data.repositories.ArticlesDataFactory
+import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 import ru.skillbranch.skillarticles.data.repositories.ArticlesRepository
-import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesState
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
@@ -31,21 +28,21 @@ class BookmarksViewModel(handle: SavedStateHandle) :
     private val listData = Transformations.switchMap(state) {
         when {
             it.isSearch && !it.searchQuery.isNullOrBlank() -> buildPageList(repository.searchBookmarks(it.searchQuery))
-            else -> buildPageList(repository.bookmarkArticles())
+            else -> buildPageList(repository.toggleBookmark())
         }
     }
 
     fun observeList(
         owner: LifecycleOwner,
-        onChange: (list: PagedList<ArticleItemData>) -> Unit
+        onChange: (list: PagedList<ArticleItem>) -> Unit
     ) {
         listData.observe(owner, Observer { onChange(it) })
     }
 
     private fun buildPageList(
         dataFactory: ArticlesDataFactory
-    ): LiveData<PagedList<ArticleItemData>> {
-        val builder = LivePagedListBuilder<Int, ArticleItemData>(
+    ): LiveData<PagedList<ArticleItem>> {
+        val builder = LivePagedListBuilder<Int, ArticleItem>(
             dataFactory,
             listConfig
         )
@@ -62,7 +59,7 @@ class BookmarksViewModel(handle: SavedStateHandle) :
             .build()
     }
 
-    private fun itemAtEndHandle(lastLoadArticles: ArticleItemData) {
+    private fun itemAtEndHandle(lastLoadArticles: ArticleItem) {
         Log.e("BookmarksViewModel", "itemAtEndHandle: ")
         viewModelScope.launch(Dispatchers.IO) {
             val items = repository.loadArticlesFromNetwork(
@@ -70,7 +67,7 @@ class BookmarksViewModel(handle: SavedStateHandle) :
                 size = listConfig.pageSize
             )
             if (items.isNotEmpty()) {
-                repository.insertArticlesTodb(items)
+                repository.insertArticlesToDb(items)
                 listData.value?.dataSource?.invalidate()
             }
 
@@ -88,7 +85,7 @@ class BookmarksViewModel(handle: SavedStateHandle) :
         viewModelScope.launch(Dispatchers.IO) {
             val items = repository.loadArticlesFromNetwork(start = 0, size = listConfig.initialLoadSizeHint)
             if (items.isNotEmpty()) {
-                repository.insertArticlesTodb(items)
+                repository.insertArticlesToDb(items)
                 listData.value?.dataSource?.invalidate()
             }
         }
@@ -103,8 +100,8 @@ class BookmarksViewModel(handle: SavedStateHandle) :
         updateState { it.copy(searchQuery = query) }
     }
 
-    fun handleToggleBookmark(id: String, isChecked: Boolean){
-        repository.updateBookmark(id, isChecked)
+    fun handleToggleBookmark(id: String){
+        repository.toggleBookmark(id)
         listData.value?.dataSource?.invalidate()
     }
 }
@@ -117,13 +114,13 @@ data class BookmarksState(
 
 class BookmarksBoundaryCallback(
     private val zeroLoadingHandle: () -> Unit,
-    private val itemAtEndHandle: (ArticleItemData) -> Unit
-): PagedList.BoundaryCallback<ArticleItemData>() {
+    private val itemAtEndHandle: (ArticleItem) -> Unit
+): PagedList.BoundaryCallback<ArticleItem>() {
     override fun onZeroItemsLoaded() {
         zeroLoadingHandle()
     }
 
-    override fun onItemAtEndLoaded(itemAtEnd: ArticleItemData) {
+    override fun onItemAtEndLoaded(itemAtEnd: ArticleItem) {
         itemAtEndHandle(itemAtEnd)
     }
 

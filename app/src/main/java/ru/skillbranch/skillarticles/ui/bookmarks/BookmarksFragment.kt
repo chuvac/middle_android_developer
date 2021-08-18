@@ -4,24 +4,17 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import androidx.appcompat.widget.SearchView
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import kotlinx.android.synthetic.main.fragment_articles.*
 import kotlinx.android.synthetic.main.fragment_bookmarks.*
 import ru.skillbranch.skillarticles.R
-import ru.skillbranch.skillarticles.data.models.ArticleItemData
 import ru.skillbranch.skillarticles.ui.articles.ArticlesAdapter
-import ru.skillbranch.skillarticles.ui.articles.ArticlesFragmentDirections
 import ru.skillbranch.skillarticles.ui.base.BaseFragment
 import ru.skillbranch.skillarticles.ui.base.Binding
 import ru.skillbranch.skillarticles.ui.base.MenuItemHolder
 import ru.skillbranch.skillarticles.ui.base.ToolbarBuilder
 import ru.skillbranch.skillarticles.ui.delegates.RenderProp
-import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesState
-import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 import ru.skillbranch.skillarticles.viewmodels.bookmarks.BookmarksState
@@ -44,7 +37,7 @@ class BookmarksFragment : BaseFragment<BookmarksViewModel>() {
     }
     private val articlesAdapter = ArticlesAdapter(::onArticleClickListener, ::onBookmarkClickListener)
 
-    private fun onArticleClickListener(item: ArticleItemData) {
+    private fun onArticleClickListener(item: ArticleItem) {
         Log.e("ArticlesFragment", "click on article: ${item.id} ")
         val action = BookmarksFragmentDirections.actionNavBookmarksToPageArticle(
             item.id,

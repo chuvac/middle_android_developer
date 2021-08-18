@@ -11,10 +11,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import ru.skillbranch.skillarticles.R
-import ru.skillbranch.skillarticles.data.models.ArticleItemData
 import ru.skillbranch.skillarticles.extensions.attrValue
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
-import ru.skillbranch.skillarticles.extensions.shortFormat
 import kotlin.math.max
 
 class ArticleItemView constructor(
@@ -266,7 +264,7 @@ class ArticleItemView constructor(
         )
     }
 
-    fun bind(item: ArticleItemData, toggleBookmarkListener: (String, Boolean) -> Unit) {
+    fun bind(item: ArticleItem, toggleBookmarkListener: (String, Boolean) -> Unit) {
 
         tv_date.text = item.date.shortFormat()
         tv_author.text = item.author
