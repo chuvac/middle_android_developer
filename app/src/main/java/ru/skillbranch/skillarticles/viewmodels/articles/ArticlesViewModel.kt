@@ -43,6 +43,7 @@ class ArticlesViewModel(handle: SavedStateHandle) :
 
     fun observeList(
         owner: LifecycleOwner,
+        isBookmark: Boolean = false,
         onChange: (list: PagedList<ArticleItem>) -> Unit
     ) {
         listData.observe(owner, Observer { onChange(it) })

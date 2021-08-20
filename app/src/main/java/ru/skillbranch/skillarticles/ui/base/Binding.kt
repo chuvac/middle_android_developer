@@ -50,4 +50,19 @@ abstract class Binding {
                 ) }
         }
     }
+
+    fun <A, B> dependsOn(
+        vararg fields: KProperty<*>,
+        onChange: (A, B) -> Unit
+    ) {
+        check(fields.size == 2) {"Names size must be 4, current ${fields.size}"}
+        val names = fields.map { it.name }
+        names.forEach{
+            delegates[it]?.addListener {
+                onChange(
+                    delegates[names[0]]?.value as A,
+                    delegates[names[1]]?.value as B
+                ) }
+        }
+    }
 }

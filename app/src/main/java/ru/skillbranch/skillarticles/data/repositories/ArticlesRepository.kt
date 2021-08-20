@@ -32,7 +32,7 @@ object ArticlesRepository : IArticlesRepository {
     private var articleCountsDao = db.articleCountsDao()
     private var categoriesDao = db.categoriesDao()
     private var tagsDao = db.tagsDao()
-    private var articlePersonalDao = db.articlePersonalInfosDao()
+    private var articlePersonalInfosDao = db.articlePersonalInfosDao()
 
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     fun setupTestDao(
@@ -46,7 +46,7 @@ object ArticlesRepository : IArticlesRepository {
         this.articleCountsDao = articleCountsDao
         this.categoriesDao = categoriesDao
         this.tagsDao = tagsDao
-        this.articlePersonalDao = articlePersonalInfosDao
+        this.articlePersonalInfosDao = articlePersonalInfosDao
     }
 
     override fun loadArticlesFromNetwork(start: Int, size: Int): List<ArticleRes> =
@@ -73,7 +73,7 @@ object ArticlesRepository : IArticlesRepository {
     }
 
     override fun toggleBookmark(articleId: String) {
-        articlePersonalDao.toggleBookmarkOrInsert(articleId)
+        articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
     }
 
     override fun findTags(): LiveData<List<String>> {
@@ -106,7 +106,7 @@ class ArticleFilter(
 
         qb.table("ArticleItem")
 
-        if (search != null && !isHashtag) qb.appendWhere("title LIKE '%$search'")
+        if (search != null && !isHashtag) qb.appendWhere("title LIKE '%$search%'")
         if (search != null && isHashtag) {
             qb.innerJoin("article_tag_x_ref AS refs", "refs.a_id = id")
             qb.appendWhere("refs.t_id = '$search'")
@@ -143,8 +143,8 @@ class QueryBuilder() {
     }
 
     fun innerJoin(table: String, on: String): QueryBuilder {
-        if (joinTables.isNullOrEmpty()) joinTables = "INNER JOIN $table ON $on"
-        else joinTables += "INNER JOIN $table ON $on"
+        if (joinTables.isNullOrEmpty()) joinTables = "INNER JOIN $table ON $on "
+        else joinTables += "INNER JOIN $table ON $on "
         return this
     }
 

@@ -7,9 +7,7 @@ import ru.skillbranch.skillarticles.data.models.ArticleData
 import ru.skillbranch.skillarticles.data.models.CommentItemData
 import ru.skillbranch.skillarticles.data.repositories.*
 import ru.skillbranch.skillarticles.extensions.data.toAppSettings
-import ru.skillbranch.skillarticles.extensions.data.toArticlePersonalInfo
 import ru.skillbranch.skillarticles.extensions.indexesOf
-import ru.skillbranch.skillarticles.extensions.format
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
@@ -52,26 +50,15 @@ class ArticleViewModel(
                 title = article.title,
                 category = article.category.title,
                 categoryIcon = article.category.icon,
-                date = article.date.shortFormat(),
-                author = article.author
+                date = article.date.shortFormat().toString(),
+                author = article.author,
+                isBookmark = article.isBookmark,
+                isLike = article.isLike,
+                content = article.content ?: emptyList(),
+                isLoadingContent = article.content == null
             )
         }
 
-        subscribeOnDataSource(getArticleContent()) { content, state ->
-            content ?: return@subscribeOnDataSource null
-            state.copy(
-                isLoadingContent = false,
-                content = content
-            )
-        }
-
-        subscribeOnDataSource(getArticlePersonalInfo()) { info, state ->
-            info ?: return@subscribeOnDataSource null
-            state.copy(
-                isBookmark = info.isBookmark,
-                isLike = info.isLike
-            )
-        }
 
         // subscribe on settings
         subscribeOnDataSource(repository.getAppSettings()) { settings, state ->
@@ -90,21 +77,6 @@ class ArticleViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             repository.fetchArticleContent(articleId)
         }
-    }
-
-    // load text from network
-    override fun getArticleContent(): LiveData<List<MarkdownElement>?> {
-        return repository.loadArticleContent(articleId)
-    }
-
-    // load data fro mdb
-    override fun getArticleData(): LiveData<ArticleData?> {
-        return repository.findArticle(articleId)
-    }
-
-    // load data from db
-    override fun getArticlePersonalInfo(): LiveData<ArticlePersonalInfo?> {
-        return repository.loadArticlePersonalInfo(articleId)
     }
 
     // session state

@@ -42,4 +42,10 @@ interface ArticlePersonalInfosDao: BaseDao<ArticlePersonalInfo> {
         SELECT * FROM article_personal_infos
     """)
     fun findPersonalInfos(): LiveData<List<ArticlePersonalInfo>>
+
+    @Query("""
+        SELECT * FROM article_personal_infos
+        WHERE article_id = :articleId
+    """)
+    fun findPersonalInfos(articleId: String): LiveData<ArticlePersonalInfo>
 }

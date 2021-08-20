@@ -9,14 +9,19 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.AutoCompleteTextView
 import android.widget.CursorAdapter
-import android.widget.SimpleCursorAdapter
 import androidx.appcompat.widget.SearchView
+import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_articles.*
+import kotlinx.android.synthetic.main.search_view_layout.view.*
 import ru.skillbranch.skillarticles.R
+import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 import ru.skillbranch.skillarticles.data.local.entities.CategoryData
+import ru.skillbranch.skillarticles.ui.article.ArticleFragmentArgs
+import ru.skillbranch.skillarticles.ui.article.ArticleFragmentDirections
 import ru.skillbranch.skillarticles.ui.base.BaseFragment
 import ru.skillbranch.skillarticles.ui.base.Binding
 import ru.skillbranch.skillarticles.ui.base.MenuItemHolder
@@ -31,6 +36,7 @@ class ArticlesFragment: BaseFragment<ArticlesViewModel>() {
     override val viewModel: ArticlesViewModel by viewModels()
     override val layout: Int = R.layout.fragment_articles
     override val binding: ArticlesBinding by lazy { ArticlesBinding() }
+    private val args: ArticlesFragmentArgs by navArgs()
     private lateinit var suggestionsAdapter: SimpleCursorAdapter
 
     override val prepareToolbar: (ToolbarBuilder.() -> Unit) = {
@@ -58,28 +64,22 @@ class ArticlesFragment: BaseFragment<ArticlesViewModel>() {
             }
         )
     }
-    private val articlesAdapter = ArticlesAdapter(::onArticleClickListener, ::onBookmarkClickListener)
-
-    private fun onArticleClickListener(item: ArticleItem) {
-        Log.e("ArticlesFragment", "click on article: ${item.id} ")
-        val action = ArticlesFragmentDirections.actionNavArticlesToPageArticle(
-            item.id,
-            item.author,
-            item.authorAvatar,
-            item.category,
-            item.categoryIcon,
-            item.poster,
-            item.title,
-            item.date
-        )
-
-        viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))
-    }
-
-    private fun onBookmarkClickListener(id: String, isChecked: Boolean) {
-        val checked = !isChecked
-
-        viewModel.handleToggleBookmark(id, checked)
+    private val articlesAdapter = ArticlesAdapter { item, isToggleBookmark ->
+        if (isToggleBookmark) {
+            viewModel.handleToggleBookmark(item.id)
+        } else {
+            val action = ArticlesFragmentDirections.actionToPageArticle(
+                item.id,
+                item.author,
+                item.authorAvatar!!,
+                item.category,
+                item.categoryIcon,
+                item.poster,
+                item.title,
+                item.date
+            )
+            viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,8 +105,6 @@ class ArticlesFragment: BaseFragment<ArticlesViewModel>() {
         if (binding.isSearch) {
             menuItem.expandActionView()
             searchView.setQuery(binding.searchQuery, false)
-            if (binding.isFocusedSearch) searchView.requestFocus()
-            else searchView.clearFocus()
         }
 
         val autoTv = searchView.findViewById<AutoCompleteTextView>(R.id.search_src_text)
@@ -157,6 +155,11 @@ class ArticlesFragment: BaseFragment<ArticlesViewModel>() {
             true
         }
     }
+
+    override fun onDestroyView() {
+        toolbar.search_view?.setOnQueryTextListener(null)
+        super.onDestroyView()
+    }
     override fun setupViews() {
         with(rv_articles) {
             layoutManager = LinearLayoutManager(context)
@@ -194,6 +197,7 @@ class ArticlesFragment: BaseFragment<ArticlesViewModel>() {
             if (tagValue.contains(constraint, true)) cursor.addRow(arrayOf<Any>(i, tagValue))
             currentCursor.moveToNext()
         }
+        return cursor
     }
 
     inner class ArticlesBinding: Binding() {

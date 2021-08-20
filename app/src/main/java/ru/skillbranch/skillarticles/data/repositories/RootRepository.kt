@@ -1,10 +1,12 @@
 package ru.skillbranch.skillarticles.data.repositories
 
 import androidx.lifecycle.LiveData
-import ru.skillbranch.skillarticles.data.LocalDataHolder
+import ru.skillbranch.skillarticles.data.local.PrefManager
 
 object RootRepository {
 
-    fun isAuth() : LiveData<Boolean> = ArticleRepository.isAuth()
-    fun setAuth(auth:Boolean) = ArticleRepository.setAuth(auth)
+    val preferences: PrefManager = PrefManager
+
+    fun isAuth() : LiveData<Boolean> = preferences.isAuth()
+    fun setAuth(auth:Boolean) = preferences.setAuth(auth)
 }

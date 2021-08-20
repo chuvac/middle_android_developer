@@ -40,9 +40,9 @@ object ArticleRepository: IArticleRepository {
     private val network = NetworkDataHolder
     private val preferences = PrefManager
     private var articlesDao = db.articlesDao()
-    private var articlePersonalDao = db.articlePersonalInfosDao()
+    private var articlePersonalInfosDao = db.articlePersonalInfosDao()
     private var articleCountsDao = db.articleCountsDao()
-    private var articleCOntentDao = db.articleContentsDao()
+    private var articleContentDao = db.articleContentsDao()
 
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     fun setupTestDao(
@@ -52,9 +52,9 @@ object ArticleRepository: IArticleRepository {
         articleContentDao: ArticleContentsDao
     ) {
         this.articlesDao = articlesDao
-        this.articlePersonalDao = articlePersonalDao
+        this.articlePersonalInfosDao = articlePersonalDao
         this.articleCountsDao = articleCountsDao
-        this.articleCOntentDao = articleContentDao
+        this.articleContentDao = articleContentDao
     }
 
     override fun findArticle(articleId: String): LiveData<ArticleFull> {
@@ -63,16 +63,16 @@ object ArticleRepository: IArticleRepository {
 
     override fun getAppSettings(): LiveData<AppSettings> = preferences.getAppSettings() //from preferences
     override fun toggleLike(articleId: String) {
-        articlePersonalDao.toggleLikeOrInsert(articleId)
+        articlePersonalInfosDao.toggleLikeOrInsert(articleId)
     }
 
     override fun toggleBookmark(articleId: String) {
-        articlePersonalDao.toggleBookmarkOrInsert(articleId)
+        articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
     }
 
     override fun fetchArticleContent(articleId: String) {
         val content = network.loadArticleContent(articleId).apply { sleep(1500) }
-        articleCOntentDao.insert(content.toArticleContent())
+        articleContentDao.insert(content.toArticleContent())
     }
 
     override fun findArticleCommentCount(articleId: String): LiveData<Int> {
@@ -119,8 +119,8 @@ object ArticleRepository: IArticleRepository {
         articleCountsDao.incrementLike(articleId)
     }
 
-    override fun updateSettings(appSettings: AppSettings) {
-        TODO("Not yet implemented")
+    override fun updateSettings(copy: AppSettings) {
+        preferences.setAppSettings(copy)
     }
 
     override fun sendMessage(articleId: String, comment: String, answerToSlug: String?) {
