@@ -40,13 +40,13 @@ object ArticlesRepository : IArticlesRepository {
         articleCountsDao: ArticleCountsDao,
         categoriesDao: CategoriesDao,
         tagsDao: TagsDao,
-        articlePersonalInfosDao: ArticlePersonalInfosDao
+        articlePersonalDao: ArticlePersonalInfosDao
     ) {
         this.articlesDao = articlesDao
         this.articleCountsDao = articleCountsDao
         this.categoriesDao = categoriesDao
         this.tagsDao = tagsDao
-        this.articlePersonalInfosDao = articlePersonalInfosDao
+        this.articlePersonalInfosDao = articlePersonalDao
     }
 
     override fun loadArticlesFromNetwork(start: Int, size: Int): List<ArticleRes> =
