@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
+import ru.skillbranch.skillarticles.data.local.entities.ArticleContent
 import ru.skillbranch.skillarticles.data.local.entities.ArticleCounts
 
 @Dao
@@ -51,4 +53,15 @@ interface ArticleCountsDao: BaseDao<ArticleCounts> {
         WHERE article_id = :articleId
     """)
     fun getCommentsCount(articleId: String): LiveData<Int>
+
+    @Query("SELECT * FROM article_counts WHERE article_id = :articleId")
+    suspend fun findArticlesCountsTest(articleId:String) : ArticleCounts
+
+    @Query("UPDATE article_counts SET likes = :likesCount WHERE article_id = :articleId")
+    suspend fun updateLike(articleId: String, likesCount: Int)
+
+    @Query("UPDATE article_counts SET comments = :messageCount WHERE article_id = :articleId")
+    suspend fun updateCommentsCount(articleId: String, messageCount: Int) {
+
+    }
 }

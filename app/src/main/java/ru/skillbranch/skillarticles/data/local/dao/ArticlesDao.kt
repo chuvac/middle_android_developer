@@ -59,4 +59,6 @@ interface ArticlesDao: BaseDao<Article> {
     @Delete
     fun delete(article: Article)
 
+    @Query("SELECT * FROM articles")
+    suspend fun findArticlesTest(): List<Article>
 }

@@ -18,29 +18,38 @@ import java.lang.Thread.sleep
 import kotlin.math.abs
 import androidx.annotation.VisibleForTesting
 import ru.skillbranch.skillarticles.data.local.dao.ArticleCountsDao
+import ru.skillbranch.skillarticles.data.remote.NetworkManager
+import ru.skillbranch.skillarticles.data.remote.err.NoNetworkError
+import ru.skillbranch.skillarticles.data.remote.req.MessageReq
 
 interface IArticleRepository {
     fun findArticle(articleId: String): LiveData<ArticleFull>
     fun getAppSettings(): LiveData<AppSettings>
-    fun toggleLike(articleId: String)
-    fun toggleBookmark(articleId: String)
-    fun isAuth(): MutableLiveData<Boolean>
-    fun loadCommentsByRange(slug: String?, size: Int, articleId: String): List<CommentItemData>
-    fun sendMessage(articleId: String, text: String, answerToSlug: String?)
-    fun loadAllComments(articleId: String, total: Int): CommentsDataFactory
-    fun decrementLike(articleId: String)
-    fun incrementLike(articleId: String)
+    fun isAuth(): LiveData<Boolean>
     fun updateSettings(copy: AppSettings)
-    fun fetchArticleContent(articleId: String)
+
+    suspend fun toggleLike(articleId: String)
+    suspend fun toggleBookmark(articleId: String)
+    suspend fun decrementLike(articleId: String)
+    suspend fun incrementLike(articleId: String)
+    suspend fun sendMessage(articleId: String, message: String, answerToSlug: String?)
+    suspend fun fetchArticleContent(articleId: String)
+    fun loadCommentsByRange(slug: String?, size: Int, articleId: String): List<CommentItemData>
+
     fun findArticleCommentCount(articleId: String): LiveData<Int>
+    fun loadAllComments(
+        articleId: String,
+        total: Int,
+        errHandler: (Throwable) -> Unit
+    ): CommentsDataFactory
 
 }
 
-object ArticleRepository: IArticleRepository {
-    private val network = NetworkDataHolder
+object ArticleRepository : IArticleRepository {
+    private val network = NetworkManager.api
     private val preferences = PrefManager
     private var articlesDao = db.articlesDao()
-    private var articlePersonalInfosDao = db.articlePersonalInfosDao()
+    private var articlePersonalDao = db.articlePersonalInfosDao()
     private var articleCountsDao = db.articleCountsDao()
     private var articleContentDao = db.articleContentsDao()
 
@@ -52,7 +61,7 @@ object ArticleRepository: IArticleRepository {
         articleContentDao: ArticleContentsDao
     ) {
         this.articlesDao = articlesDao
-        this.articlePersonalInfosDao = articlePersonalDao
+        this.articlePersonalDao = articlePersonalDao
         this.articleCountsDao = articleCountsDao
         this.articleContentDao = articleContentDao
     }
@@ -61,13 +70,73 @@ object ArticleRepository: IArticleRepository {
         return articlesDao.findFullArticle(articleId)
     }
 
-    override fun getAppSettings(): LiveData<AppSettings> = preferences.getAppSettings() //from preferences
-    override fun toggleLike(articleId: String) {
-        articlePersonalInfosDao.toggleLikeOrInsert(articleId)
+    override fun getAppSettings(): LiveData<AppSettings> =
+        preferences.appSettings //from preferences
+
+    override fun isAuth(): LiveData<Boolean> = preferences.isAuthLive
+
+    override fun updateSettings(settings: AppSettings) {
+        preferences.isBigText = settings.isBigText
+        preferences.isDarkMode = settings.isDarkMode
     }
 
-    override fun toggleBookmark(articleId: String) {
-        articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
+    override suspend fun toggleLike(articleId: String) {
+        articlePersonalDao.toggleLikeOrInsert(articleId)
+    }
+
+    override suspend fun toggleBookmark(articleId: String) {
+        articlePersonalDao.toggleBookmarkOrInsert(articleId)
+    }
+
+    override suspend fun decrementLike(articleId: String) {
+        //check auth locally
+        if (preferences.accessToken!!.isEmpty()){
+            articleCountsDao.decrementLike(articleId)
+            return
+        }
+
+        try {
+            val res = network.decrementLike(articleId, preferences.accessToken!!)
+            articleCountsDao.updateLike(articleId, res.likeCount)
+        } catch (e: Throwable) {
+            if (e is NoNetworkError) {
+                articleCountsDao.decrementLike(articleId)
+                return
+            }
+            throw e
+        }
+    }
+
+    override suspend fun incrementLike(articleId: String) {
+        //check auth locally
+        if (preferences.accessToken!!.isEmpty()){
+            articleCountsDao.incrementLike(articleId)
+            return
+        }
+
+        try {
+            val res = network.incrementLikes(articleId, preferences.accessToken!!)
+            articleCountsDao.updateLike(articleId, res.likeCount)
+        } catch (e: Throwable) {
+            if (e is NoNetworkError) {
+                articleCountsDao.incrementLike(articleId)
+                return
+            }
+            throw e
+        }
+    }
+
+    override suspend fun sendMessage(
+        articleId: String,
+        message: String,
+        answerToMessageId: String?
+    ) {
+        val (_, messageCount) = network.sendMessage(
+            articleId,
+            MessageReq(message = message, answerTo = answerToMessageId),
+            preferences.accessToken!!
+        )
+        articleCountsDao.updateCommentsCount(articleId, messageCount)
     }
 
     override fun fetchArticleContent(articleId: String) {
@@ -79,8 +148,6 @@ object ArticleRepository: IArticleRepository {
         return articleCountsDao.getCommentsCount(articleId)
     }
 
-    override fun isAuth(): MutableLiveData<Boolean> = preferences.isAuth()
-
     override fun loadCommentsByRange(
         slug: String?,
         size: Int,
@@ -89,7 +156,7 @@ object ArticleRepository: IArticleRepository {
         val data = network.commentsData.getOrElse(articleId) {
             mutableListOf()
         }
-        return when{
+        return when {
             slug == null -> data.take(size)
 
             size > 0 -> data.dropWhile { it.slug != slug }
@@ -105,31 +172,14 @@ object ArticleRepository: IArticleRepository {
     }
 
 
-    override fun loadAllComments(articleId: String, totalCount: Int): CommentsDataFactory = CommentsDataFactory(
-        itemProvider = ::loadCommentsByRange,
-        articleId = articleId,
-        totalCount = totalCount
-    )
-
-    override fun decrementLike(articleId: String) {
-        articleCountsDao.decrementLike(articleId)
-    }
-
-    override fun incrementLike(articleId: String) {
-        articleCountsDao.incrementLike(articleId)
-    }
-
-    override fun updateSettings(copy: AppSettings) {
-        preferences.setAppSettings(copy)
-    }
-
-    override fun sendMessage(articleId: String, comment: String, answerToSlug: String?) {
-        network.sendMessage(
-            articleId, comment, answerToSlug,
-            User("777", "John Doe", "https://skill-branch.ru/img/bot/android-category.png")
+    override fun loadAllComments(articleId: String, totalCount: Int): CommentsDataFactory =
+        CommentsDataFactory(
+            itemProvider = ::loadCommentsByRange,
+            articleId = articleId,
+            totalCount = totalCount
         )
-        articleCountsDao.incrementCommentsCount(articleId)
-    }
+
+
 
 }
 

@@ -48,4 +48,7 @@ interface ArticlePersonalInfosDao: BaseDao<ArticlePersonalInfo> {
         WHERE article_id = :articleId
     """)
     fun findPersonalInfos(articleId: String): LiveData<ArticlePersonalInfo>
+
+    @Query("SELECT * FROM article_personal_infos WHERE article_id = :articleId")
+    suspend fun findPersonalInfosTest(articleId: String): ArticlePersonalInfo
 }
