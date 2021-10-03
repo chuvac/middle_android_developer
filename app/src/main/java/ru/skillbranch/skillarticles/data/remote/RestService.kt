@@ -38,7 +38,7 @@ interface RestService {
 
     //https://skill-articles.skill.branch.ru/api/v1/articles/{articleId}/counts
     @GET("articles/{article}/counts")
-    suspend fun loadArticlecounts(@Path("article") articleId: String): ArticleCountsRes
+    suspend fun loadArticleCounts(@Path("article") articleId: String): ArticleCountsRes
 
     //https://skill-articles.skill.branch.ru/api/v1/auth/login
     @POST("auth/login")

@@ -12,6 +12,7 @@ class ChoseCategoryDialog: DialogFragment() {
     private val viewModel: ArticlesViewModel by activityViewModels()
     private val selectedCategories = mutableListOf<String>()
     private val args: ChoseCategoryDialogArgs by navArgs()
+    private val categoryAdapter = CategoryAdapter {}
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val categories = args.categories.toList().map {"${it.title} (${it.articlesCount})"}.toTypedArray()
