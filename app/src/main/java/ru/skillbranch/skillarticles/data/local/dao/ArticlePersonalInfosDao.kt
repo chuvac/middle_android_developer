@@ -29,13 +29,23 @@ interface ArticlePersonalInfosDao: BaseDao<ArticlePersonalInfo> {
     fun toggleBookmark(articleId: String): Int
 
     @Transaction
-    fun toggleBookmarkOrInsert(articleId: String) {
+    fun toggleBookmarkOrInsert(articleId: String): Boolean {
         if (toggleBookmark(articleId) == 0) insert(ArticlePersonalInfo(articleId = articleId, isBookmark = true))
+        return isBookmarked(articleId)
     }
 
+    @Query("""
+        SELECT is_bookmark FROM article_personal_infos
+        WHERE article_id = :articleId
+    """)
+    fun isBookmarked(articleId: String): Boolean
+
     @Transaction
-    fun toggleLikeOrInsert(articleId: String){
-        if (toggleLike(articleId) == 0) insert(ArticlePersonalInfo(articleId = articleId, isLike = true))
+    fun toggleLikeOrInsert(articleId: String): Boolean{
+        return if (toggleLike(articleId) == 0) {
+            insert(ArticlePersonalInfo(articleId = articleId, isLike = true))
+            true
+        } else false
     }
 
     @Query("""
@@ -50,5 +60,5 @@ interface ArticlePersonalInfosDao: BaseDao<ArticlePersonalInfo> {
     fun findPersonalInfos(articleId: String): LiveData<ArticlePersonalInfo>
 
     @Query("SELECT * FROM article_personal_infos WHERE article_id = :articleId")
-    suspend fun findPersonalInfosTest(articleId: String): ArticlePersonalInfo
+    fun findPersonalInfosTest(articleId: String): ArticlePersonalInfo
 }

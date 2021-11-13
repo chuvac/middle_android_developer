@@ -22,7 +22,7 @@ interface RestService {
 
     //https://skill-articles.skill.branch.ru/api/v1/articles/{articleId}/messages
     @GET("articles/{article}/messages")
-    suspend fun loadComments(
+    fun loadComments(
         @Path("article") articleId: String,
         @Query("last") last: String? = null,
         @Query("limit") limit: Int = 5
@@ -60,4 +60,18 @@ interface RestService {
         @Path("article") articleId: String,
         @Header("Authorization") token: String
     ): LikeRes
+
+    //https://skill-articles.skill.branch.ru/api/v1/articles/{{articleId}}/addBookmark
+    @POST("articles/{article}/addBookmark")
+    suspend fun addBookmark(
+        @Path("article") articleId: String,
+        @Header("Authorization") token: String
+    ): BookmarkRes
+
+    //https://skill-articles.skill.branch.ru/api/v1/articles/{{articleId}}/removeBookmark
+    @POST("articles/{article}/removeBookmark")
+    suspend fun removeBookmark(
+        @Path("article") articleId: String,
+        @Header("Authorization") token: String
+    ): BookmarkRes
 }

@@ -2,12 +2,12 @@ package ru.skillbranch.skillarticles.ui.base
 
 import android.os.Bundle
 import android.view.*
-import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.activity_root.*
 import ru.skillbranch.skillarticles.ui.RootActivity
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.base.Loading
 
 abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment() {
     val root: RootActivity
@@ -60,6 +60,8 @@ abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment()
             root.viewModel.navigate(it)
         }
 
+        viewModel.observeLoading(viewLifecycleOwner){renderLoading(it)}
+
         setupViews()
 
     }
@@ -88,5 +90,9 @@ abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment()
             }
         } else menu.clear()
         super.onPrepareOptionsMenu(menu)
+    }
+
+    open fun renderLoading(loadingState: Loading){
+        root.renderLoading(loadingState)
     }
 }

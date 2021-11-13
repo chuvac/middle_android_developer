@@ -1,10 +1,5 @@
 package ru.skillbranch.skillarticles.viewmodels.article
 
-import androidx.lifecycle.LiveData
-import ru.skillbranch.skillarticles.data.local.entities.ArticlePersonalInfo
-import ru.skillbranch.skillarticles.data.models.ArticleData
-import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
-
 interface IArticleViewModel {
     /**
      * Получение полной информации о статье из сети
@@ -84,5 +79,5 @@ interface IArticleViewModel {
 
     fun handleCopyCode()
 
-    fun handleSendComment(comment: String)
+    fun handleSendComment(comment: String?)
 }

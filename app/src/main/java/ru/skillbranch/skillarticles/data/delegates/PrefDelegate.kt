@@ -1,6 +1,5 @@
 package ru.skillbranch.skillarticles.data.delegates
 
-import android.content.SharedPreferences
 import com.squareup.moshi.JsonAdapter
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import kotlin.properties.ReadWriteProperty
@@ -12,10 +11,10 @@ class PrefDelegate<T>(private val defaultValue: T) {
     operator fun provideDelegate(
         thisRef: PrefManager,
         prop: KProperty<*>
-    ): ReadWriteProperty<PrefManager, T?> {
+    ): ReadWriteProperty<PrefManager, T> {
         val key = prop.name
-        return object : ReadWriteProperty<PrefManager, T?> {
-            override fun getValue(thisRef: PrefManager, property: KProperty<*>): T? {
+        return object : ReadWriteProperty<PrefManager, T> {
+            override fun getValue(thisRef: PrefManager, property: KProperty<*>): T {
                 if (storedValue == null) {
                     @Suppress("UNCHECKED_CAST")
                     storedValue = when (defaultValue) {
@@ -30,10 +29,10 @@ class PrefDelegate<T>(private val defaultValue: T) {
                         else -> error("This type can not be stored into Preferences")
                     }
                 }
-                return storedValue
+                return storedValue!!
             }
 
-            override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T?) {
+            override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T) {
                 with(thisRef.preferences.edit()) {
                     when (value) {
                         is Boolean -> putBoolean(key, value)

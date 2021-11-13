@@ -9,5 +9,6 @@ data class User(
     val rating:Int = 0,
     val respect:Int = 0,
     val lastVisit: Date = Date(),
-    val contacts: Map<String, String> = mapOf()
+    val contacts: Map<String, String> = mapOf(),
+    val about: String? = null
 )

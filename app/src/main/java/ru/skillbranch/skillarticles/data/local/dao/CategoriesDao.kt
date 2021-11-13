@@ -16,4 +16,6 @@ interface CategoriesDao: BaseDao<Category> {
         ORDER BY articles_count DESC
     """)
     fun findAllCategoriesData(): LiveData<List<CategoryData>>
+
+
 }

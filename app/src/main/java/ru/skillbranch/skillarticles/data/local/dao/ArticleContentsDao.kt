@@ -13,4 +13,7 @@ interface ArticleContentsDao {
 
     @Query("SELECT * FROM article_contents")
     suspend fun findArticlesContentsTest(): List<ArticleContent>
+
+    @Query("DELETE FROM article_contents WHERE article_id = :articleId")
+    suspend fun removeArticleContent(articleId: String)
 }
