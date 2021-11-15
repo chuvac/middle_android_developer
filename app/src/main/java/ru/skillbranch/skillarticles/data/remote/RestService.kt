@@ -56,7 +56,7 @@ interface RestService {
 
     //https://skill-articles.skill.branch.ru/api/v1/articles/{articleId}/incrementLikes
     @POST("articles/{article}/incrementLikes")
-    suspend fun incrementLikes(
+    suspend fun incrementLike(
         @Path("article") articleId: String,
         @Header("Authorization") token: String
     ): LikeRes

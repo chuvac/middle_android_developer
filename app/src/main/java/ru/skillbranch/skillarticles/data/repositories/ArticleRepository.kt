@@ -74,11 +74,13 @@ object ArticleRepository : IArticleRepository {
     }
 
     override suspend fun toggleLike(articleId: String): Boolean {
-        return articlePersonalDao.toggleLikeOrInsert(articleId)
+        articlePersonalDao.toggleLikeOrInsert(articleId)
+        return articlePersonalDao.isLiked(articleId)
     }
 
     override suspend fun toggleBookmark(articleId: String): Boolean {
-        return articlePersonalDao.toggleBookmarkOrInsert(articleId)
+        articlePersonalDao.toggleBookmarkOrInsert(articleId)
+        return articlePersonalDao.isBookmarked(articleId)
     }
 
     override suspend fun decrementLike(articleId: String) {
@@ -108,7 +110,7 @@ object ArticleRepository : IArticleRepository {
         }
 
         try {
-            val res = network.incrementLikes(articleId, preferences.accessToken)
+            val res = network.incrementLike(articleId, preferences.accessToken)
             articleCountsDao.updateLike(articleId, res.likeCount)
         } catch (e: Throwable) {
             if (e is NoNetworkError) {
@@ -160,11 +162,29 @@ object ArticleRepository : IArticleRepository {
         )
 
     suspend fun addBookmark(articleId: String) {
-        network.addBookmark(articleId, preferences.accessToken)
+        if(preferences.accessToken.isEmpty()) {
+            return
+        }
+
+        try {
+            network.addBookmark(articleId, preferences.accessToken)
+        } catch (e: Exception) {
+            if (e is NoNetworkError) return
+            throw e
+        }
     }
 
     suspend fun removeBookmark(articleId: String) {
-        network.removeBookmark(articleId, preferences.accessToken)
+        if(preferences.accessToken.isEmpty()) {
+            return
+        }
+
+        try {
+            network.removeBookmark(articleId, preferences.accessToken)
+        } catch (e: Exception) {
+            if (e is NoNetworkError) return
+            throw e
+        }
     }
 
 
