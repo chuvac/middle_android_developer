@@ -32,6 +32,6 @@ object ProfileRepository: IProfileRepository {
 
     override suspend fun editProfile(name: String, about: String) {
         val user = network.editProfile(EditProfileReq(name, about), prefs.accessToken)
-        prefs.profile = user
+        prefs.profile = prefs.profile?.copy(name = name, about = about) ?: user
     }
 }
