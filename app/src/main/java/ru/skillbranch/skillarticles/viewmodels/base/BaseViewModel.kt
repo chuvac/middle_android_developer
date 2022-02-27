@@ -22,6 +22,9 @@ abstract class BaseViewModel<T : IViewModelState>(
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     val navigation = MutableLiveData<Event<NavigationCommand>>()
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    val permissions = MutableLiveData<Event<List<String>>>()
+
     private val loading = MutableLiveData<Loading>(Loading.HIDE_LOADING)
 
     /***
@@ -46,8 +49,9 @@ abstract class BaseViewModel<T : IViewModelState>(
      * лямбда выражение принимает в качестве аргумента текущее состояние и возвращает
      * модифицированное состояние, которое присваивается текущему состоянию
      */
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     @UiThread
-    protected inline fun updateState(update: (currentState: T) -> T) {
+    inline fun updateState(update: (currentState: T) -> T) {
         val updatedState: T = update(currentState)
         state.value = updatedState
     }
@@ -66,14 +70,14 @@ abstract class BaseViewModel<T : IViewModelState>(
     /***
      * отображение индикатора загрузки (по умолчанию не блокирующий Loading)
      */
-    protected fun showLoading(loadingType: Loading = Loading.SHOW_LOADING){
+    protected fun showLoading(loadingType: Loading = Loading.SHOW_LOADING) {
         loading.value = loadingType
     }
 
     /***
      * скрытие индикатора загрузки
      */
-    protected fun hideLoading(){
+    protected fun hideLoading() {
         loading.value = Loading.HIDE_LOADING
     }
 
@@ -128,8 +132,8 @@ abstract class BaseViewModel<T : IViewModelState>(
         compHandler: ((Throwable?) -> Unit)? = null,
         block: suspend CoroutineScope.() -> Unit
     ) {
-        val errHand = CoroutineExceptionHandler {_, throwable ->
-            errHandler?.invoke(throwable) ?: when(throwable) {
+        val errHand = CoroutineExceptionHandler { _, throwable ->
+            errHandler?.invoke(throwable) ?: when (throwable) {
                 is NoNetworkError -> notify(Notify.TextMessage("Network not available, check internet connection"))
                 else -> notify(Notify.ErrorMessage(throwable.message ?: "Something wrong"))
             }
@@ -156,6 +160,14 @@ abstract class BaseViewModel<T : IViewModelState>(
         state.addSource(source) {
             state.value = onChanged(it, currentState) ?: return@addSource
         }
+    }
+
+    fun requestPermissions(requestedPermissions: List<String>) {
+        permissions.value = Event(requestedPermissions)
+    }
+
+    fun observerPermissions(owner: LifecycleOwner, handle: (permissions: List<String>) -> Unit) {
+        permissions.observe(owner, EventObserver { handle(it) })
     }
 
 }
@@ -210,23 +222,23 @@ sealed class Notify() {
     ) : Notify()
 }
 
-sealed class NavigationCommand(){
+sealed class NavigationCommand() {
     data class To(
         val destination: Int,
         val args: Bundle? = null,
         val options: NavOptions? = null,
         val extras: Navigator.Extras? = null
-    ): NavigationCommand()
+    ) : NavigationCommand()
 
     data class StartLogin(
         val privateDestination: Int? = null
-    ): NavigationCommand()
+    ) : NavigationCommand()
 
     data class FinishLogin(
         val privateDestination: Int? = null
-    ): NavigationCommand()
+    ) : NavigationCommand()
 }
 
-enum class Loading{
+enum class Loading {
     SHOW_LOADING, SHOW_BLOCKING_LOADING, HIDE_LOADING
 }

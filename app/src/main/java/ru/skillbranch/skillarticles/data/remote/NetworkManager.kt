@@ -8,6 +8,7 @@ import ru.skillbranch.skillarticles.AppConfig
 import ru.skillbranch.skillarticles.data.JsonConverter.moshi
 import ru.skillbranch.skillarticles.data.remote.interceptors.ErrorStatusInterceptor
 import ru.skillbranch.skillarticles.data.remote.interceptors.NetworkStatusInterceptor
+import ru.skillbranch.skillarticles.data.remote.interceptors.TokenAuthenticator
 import java.util.concurrent.TimeUnit
 
 object NetworkManager {
@@ -21,6 +22,7 @@ object NetworkManager {
         val client = OkHttpClient().newBuilder()
             .readTimeout(2, TimeUnit.SECONDS) //socket timeout(GET)
             .writeTimeout(5, TimeUnit.SECONDS) //socket timeout (POST, PUT, ect)
+            .authenticator(TokenAuthenticator())
             .addInterceptor(NetworkStatusInterceptor()) //intercept network status
             .addInterceptor(logging) //intercept req/res for loggin
             .addInterceptor(ErrorStatusInterceptor())  //intercept status errors

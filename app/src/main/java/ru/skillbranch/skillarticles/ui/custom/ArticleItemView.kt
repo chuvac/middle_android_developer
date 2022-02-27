@@ -290,6 +290,7 @@ class ArticleItemView constructor(
         tv_read_duration.text = "${item.readDuration} min read"
         iv_bookmark.isChecked = item.isBookmark
         iv_bookmark.setOnClickListener { toggleBookmarkListener.invoke(item, item.isBookmark) }
+        this.setOnClickListener { toggleBookmarkListener.invoke(item, false) }
     }
 }
 
